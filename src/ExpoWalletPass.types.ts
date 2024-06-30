@@ -1,3 +1,5 @@
+import { ViewProps } from "react-native";
+
 export type ChangeEventPayload = {
   value: string;
 };
@@ -7,5 +9,5 @@ export type ExpoWalletPassViewProps = {
 };
 
 export type WalletButtonProps = {
-  onPress: (event: any) => void;
-};
+  onTap: () => void;
+} & ViewProps;

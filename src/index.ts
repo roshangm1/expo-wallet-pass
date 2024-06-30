@@ -25,6 +25,10 @@ export function addPassFromUrl(url: string): Promise<void> {
   return ExpoWalletPassModule.addPassFromUrl(url);
 }
 
+export function viewInWallet(passId: string, serialNumber?: string): void {
+  return ExpoWalletPassModule.viewInWallet(passId, serialNumber);
+}
+
 export {
   ExpoWalletPassView,
   ExpoWalletPassViewProps,

@@ -1,7 +1,7 @@
 {
   "platforms": ["ios", "tvos", "android", "web"],
   "ios": {
-    "modules": ["ExpoWalletPassModule"]
+    "modules": ["ExpoWalletPassModule", "WalletButtonModule"]
   },
   "android": {
     "modules": ["expo.modules.walletpass.ExpoWalletPassModule"]

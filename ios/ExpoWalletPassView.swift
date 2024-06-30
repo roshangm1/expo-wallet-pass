@@ -5,4 +5,5 @@ import PassKit
 // to apply the proper styling (e.g. border radius and shadows).
 class ExpoWalletPassView: ExpoView {
 
+    
 }

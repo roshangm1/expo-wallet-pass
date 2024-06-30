@@ -11,19 +11,21 @@ const blobToDataUrl = async (blob: any) =>
 
 export default function App() {
   const getPass = async () => {
-    const resp = await fetch(
-      "https://us-central1-leads-quik.cloudfunctions.net/generatePass",
-      {
-        body: JSON.stringify({
-          name: "Roshan Gautam",
-          company: "Brainants Technology",
-          jobTitle: "Cofounder",
-          id: "",
-          email: "roshan@brainants.com",
-        }),
-        method: "POST",
-      }
-    );
+    const passId = "pass.app.brainants.leadsquik";
+    if (ExpoWalletPass.hasPass(passId)) {
+      ExpoWalletPass.viewInWallet(passId);
+      return;
+    }
+    const resp = await fetch("http://localhost:4000/generatePass", {
+      body: JSON.stringify({
+        name: "Test User",
+        company: "BB",
+        jobTitle: "Cofounder",
+        id: "",
+        email: "roshan@brainants.com",
+      }),
+      method: "POST",
+    });
     const passBlob = await resp.blob();
     const dataUrl = await blobToDataUrl(passBlob);
 
@@ -39,7 +41,6 @@ export default function App() {
       <Text>
         {ExpoWalletPass.canAddPasses() ? "Yes Can add wallet" : "Noppppe"}
       </Text>
-      <Button title="Add Pass" onPress={getPass} />
       <Button
         title="Has Pass"
         onPress={() =>
@@ -47,11 +48,7 @@ export default function App() {
         }
       />
 
-      <ExpoWalletPass.WalletButton
-        onPress={() => {
-          console.log("Button Pressed");
-        }}
-      />
+      <ExpoWalletPass.WalletButton onTap={getPass} />
     </View>
   );
 }

@@ -1,17 +1,17 @@
 import ExpoModulesCore
 import PassKit
 
-class WalletButtonView: ExpoView {
+class WalletButtonView: ExpoView  {
   private var passButton: PKAddPassButton!
 
-  let onPress = EventDispatcher()
+  let onTap = EventDispatcher()
+    
+    required init(appContext: AppContext? = nil) {
+        super.init(appContext: appContext)
+        setupPassButton()
 
-  required init(appContext: AppContext? = nil) {
-    super.init(appContext: appContext)
-    self.setupPassButton()
-  }
-
-  private func setupPassButton() {
+    }
+    func setupPassButton() {
     passButton = PKAddPassButton(addPassButtonStyle: .black)
     passButton.translatesAutoresizingMaskIntoConstraints = false
     passButton.addTarget(self, action: #selector(passButtonPressed), for: .touchUpInside)
@@ -23,14 +23,14 @@ class WalletButtonView: ExpoView {
       passButton.widthAnchor.constraint(equalTo: widthAnchor),
       passButton.heightAnchor.constraint(equalTo: heightAnchor),
     ])
-
   }
 
   @objc
   private func passButtonPressed() {
-    onPress([
-      "message": "onpress called"
-    ])
+      onTap(
+        [:]
+      )
+
   }
 
 }

@@ -19,7 +19,11 @@
     "react-native",
     "expo",
     "expo-wallet-pass",
-    "ExpoWalletPass"
+    "ExpoWalletPass",
+    "React Native Apple Wallet Pass",
+    "Apple Wallet Pass",
+    "Wallet Pass",
+    "Wallet Manager"
   ],
   "repository": "https://github.com/roshangm1/expo-wallet-pass",
   "bugs": {

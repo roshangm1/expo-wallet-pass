@@ -60,6 +60,7 @@ public class ExpoWalletPassModule: Module, WalletManagerModuleProtocol {
     return false
   }
 
+    
   public func definition() -> ModuleDefinition {
 
     Name("ExpoWalletPass")
@@ -71,7 +72,6 @@ public class ExpoWalletPassModule: Module, WalletManagerModuleProtocol {
     Function("hasPass") { (passId: String, serialNumber: String?) -> Bool in
       let passLibrary = PKPassLibrary()
       let passes = passLibrary.passes()
-      print(passes)
       for pass in passes {
         if self.checkPassByIdentifier(pass: pass, identifier: passId, serialNumber: serialNumber) {
           return true
@@ -96,6 +96,24 @@ public class ExpoWalletPassModule: Module, WalletManagerModuleProtocol {
 
       self.addPassFromUrl(pass)
     }
+    
+      Function("viewInWallet") {(passId: String, serialNumber: String?) -> Void in
+          let passLibrary = PKPassLibrary()
+          let passes = passLibrary.passes()
+          
+          for pass in passes {
+            if self.checkPassByIdentifier(pass: pass, identifier: passId, serialNumber: serialNumber) {
+                if let passUrl = pass.passURL {
+                    DispatchQueue.main.async {
+                        UIApplication.shared.open(passUrl, options:[:], completionHandler: nil)
+                        return
+                    }
+                }
+                return
+            }
+              return
+          }
+      }
 
     View(ExpoWalletPassView.self) {
 
