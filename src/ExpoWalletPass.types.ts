@@ -5,3 +5,7 @@ export type ChangeEventPayload = {
 export type ExpoWalletPassViewProps = {
   name: string;
 };
+
+export type WalletButtonProps = {
+  onPress: (event: any) => void;
+};

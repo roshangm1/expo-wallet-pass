@@ -1,44 +1,105 @@
 import ExpoModulesCore
+import PassKit
 
-public class ExpoWalletPassModule: Module {
-  // Each module class must implement the definition function. The definition consists of components
-  // that describes the module's functionality and behavior.
-  // See https://docs.expo.dev/modules/module-api for more details about available components.
+protocol WalletManagerDelegate: AnyObject {
+  func addPassesViewControllerDidFinish(_ controller: PKAddPassesViewController)
+}
+
+public protocol WalletManagerModuleProtocol {
+  func addPassFromUrl(_ pass: String)
+}
+
+public class ExpoWalletPassModule: Module, WalletManagerModuleProtocol {
+  var pass: PKPass?
+  var passLibrary: PKPassLibrary?
+  weak var delegate: WalletManagerDelegate?
+
+  private func showViewController(with data: Data) {
+    do {
+      self.pass = try? PKPass(data: data)
+      self.passLibrary = PKPassLibrary()
+
+      if self.passLibrary?.containsPass(self.pass!) ?? false {
+        return
+      }
+
+      guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+        let rootViewController = windowScene.windows.first?.rootViewController
+      else {
+        return
+      }
+
+      let passController = PKAddPassesViewController(pass: self.pass!)
+      rootViewController.present(passController!, animated: true)
+    }
+  }
+
+  public func addPassFromUrl(_ pass: String) {
+    DispatchQueue.main.async {
+      guard let passURL = URL(string: pass) else {
+        return
+      }
+      guard let data = try? Data(contentsOf: passURL) else {
+        return
+      }
+
+      self.showViewController(with: data)
+
+    }
+  }
+
+  private func checkPassByIdentifier(pass: PKPass, identifier: String, serialNumber: String?)
+    -> Bool
+  {
+    if pass.passTypeIdentifier == identifier {
+      if let serialNumber = serialNumber {
+        return pass.serialNumber == serialNumber
+      }
+      return true
+    }
+    return false
+  }
+
   public func definition() -> ModuleDefinition {
-    // Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument.
-    // Can be inferred from module's class name, but it's recommended to set it explicitly for clarity.
-    // The module will be accessible from `requireNativeModule('ExpoWalletPass')` in JavaScript.
+
     Name("ExpoWalletPass")
 
-    // Sets constant properties on the module. Can take a dictionary or a closure that returns a dictionary.
-    Constants([
-      "PI": Double.pi
-    ])
-
-    // Defines event names that the module can send to JavaScript.
-    Events("onChange")
-
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      return "Hello world! 👋"
+    Function("canAddPasses") {
+      return PKAddPassesViewController.canAddPasses()
     }
 
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { (value: String) in
-      // Send an event to JavaScript.
-      self.sendEvent("onChange", [
-        "value": value
-      ])
-    }
-
-    // Enables the module to be used as a native view. Definition components that are accepted as part of the
-    // view definition: Prop, Events.
-    View(ExpoWalletPassView.self) {
-      // Defines a setter for the `name` prop.
-      Prop("name") { (view: ExpoWalletPassView, prop: String) in
-        print(prop)
+    Function("hasPass") { (passId: String, serialNumber: String?) -> Bool in
+      let passLibrary = PKPassLibrary()
+      let passes = passLibrary.passes()
+      print(passes)
+      for pass in passes {
+        if self.checkPassByIdentifier(pass: pass, identifier: passId, serialNumber: serialNumber) {
+          return true
+        }
       }
+
+      return false
     }
+
+    AsyncFunction("addPassFromUrl") { (pass: String) async throws -> Void in
+      guard let passURL = URL(string: pass) else {
+        throw NSError(
+          domain: "wallet", code: 1,
+          userInfo: [NSLocalizedDescriptionKey: "The pass URL is invalid"])
+      }
+
+      guard (try? Data(contentsOf: passURL)) != nil else {
+        throw NSError(
+          domain: "wallet", code: 2,
+          userInfo: [NSLocalizedDescriptionKey: "The pass data is invalid"])
+      }
+
+      self.addPassFromUrl(pass)
+    }
+
+    View(ExpoWalletPassView.self) {
+
+    }
+
   }
 }
