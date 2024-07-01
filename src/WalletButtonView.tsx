@@ -7,13 +7,11 @@ const NativeView: React.ComponentType<WalletButtonProps> =
   requireNativeViewManager("WalletButton");
 
 export default function WalletButtonView(props: WalletButtonProps) {
+  const { style, ...otherProps } = props;
   return (
     <NativeView
-      style={{
-        width: 200,
-        height: 40,
-      }}
-      {...props}
+      style={[{ width: "100%", height: 40 }, style]}
+      {...otherProps}
     />
   );
 }
