@@ -1,15 +1,12 @@
 import ExpoModulesCore
 import PassKit
 
-protocol WalletManagerDelegate: AnyObject {
+protocol WalletManagerDelegate: PKAddPassesViewControllerDelegate {
   func addPassesViewControllerDidFinish(_ controller: PKAddPassesViewController)
-}
-
-public protocol WalletManagerModuleProtocol {
   func addPassFromUrl(_ pass: String)
 }
 
-public class ExpoWalletPassModule: Module, WalletManagerModuleProtocol {
+public class ExpoWalletPassModule: Module {
   var pass: PKPass?
   var passLibrary: PKPassLibrary?
   weak var delegate: WalletManagerDelegate?
@@ -28,14 +25,21 @@ public class ExpoWalletPassModule: Module, WalletManagerModuleProtocol {
       else {
         return
       }
+      var topViewController = rootViewController
+      if let presentedViewController = rootViewController.presentedViewController {
+        topViewController = presentedViewController
+      }
 
       let passController = PKAddPassesViewController(pass: self.pass!)
-      rootViewController.present(passController!, animated: true)
+
+      topViewController.present(passController!, animated: true)
+
     }
   }
 
   public func addPassFromUrl(_ pass: String) {
     DispatchQueue.main.async {
+
       guard let passURL = URL(string: pass) else {
         return
       }
@@ -44,8 +48,8 @@ public class ExpoWalletPassModule: Module, WalletManagerModuleProtocol {
       }
 
       self.showViewController(with: data)
-
     }
+
   }
 
   private func checkPassByIdentifier(pass: PKPass, identifier: String, serialNumber: String?)
@@ -60,7 +64,6 @@ public class ExpoWalletPassModule: Module, WalletManagerModuleProtocol {
     return false
   }
 
-    
   public func definition() -> ModuleDefinition {
 
     Name("ExpoWalletPass")
@@ -96,24 +99,24 @@ public class ExpoWalletPassModule: Module, WalletManagerModuleProtocol {
 
       self.addPassFromUrl(pass)
     }
-    
-      Function("viewInWallet") {(passId: String, serialNumber: String?) -> Void in
-          let passLibrary = PKPassLibrary()
-          let passes = passLibrary.passes()
-          
-          for pass in passes {
-            if self.checkPassByIdentifier(pass: pass, identifier: passId, serialNumber: serialNumber) {
-                if let passUrl = pass.passURL {
-                    DispatchQueue.main.async {
-                        UIApplication.shared.open(passUrl, options:[:], completionHandler: nil)
-                        return
-                    }
-                }
-                return
-            }
+
+    Function("viewInWallet") { (passId: String, serialNumber: String?) -> Void in
+      let passLibrary = PKPassLibrary()
+      let passes = passLibrary.passes()
+
+      for pass in passes {
+        if self.checkPassByIdentifier(pass: pass, identifier: passId, serialNumber: serialNumber) {
+          if let passUrl = pass.passURL {
+            DispatchQueue.main.async {
+              UIApplication.shared.open(passUrl, options: [:], completionHandler: nil)
               return
+            }
           }
+          return
+        }
+        return
       }
+    }
 
     View(ExpoWalletPassView.self) {
 
